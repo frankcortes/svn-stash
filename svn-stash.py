@@ -1,35 +1,71 @@
 import os,sys
 import random
+from datetime import datetime
 
 HOME_DIR = os.path.expanduser("~")
+CURRENT_DIR = os.path.realpath(__file__)
 SVN_STASH_DIR= HOME_DIR + "/.svn-stash"
 COMMAND_DEFAULT="push"
 TARGET_FILE_DEFAULT="all"
 
+
+class svn_stash:
+	"""A class to contain all information about stashes."""
+	def __init__(self):
+		self.files = [] #list of files
+		self.timestamp = datetime.now() #time of creation
+		self.key = random.getrandbits(128) #unique identifier
+
+	def push(self,target_file,filename_list):
+		create_stash_dir_if_any()
+		if target_file == "all":
+			for filename in filename_list:
+				self.push(filename,filename_list)
+		else:
+			self.files.append(target_file)
+			result = os.popen("svn diff " + target_file + " > " + SVN_STASH_DIR + "/" + target_file + ".stash.patch").read()
+			result += os.popen("svn revert " + target_file).read()
+			print "push " + target_file
+
+	def pop(self):
+		if os.path.exists(SVN_STASH_DIR):
+			for target_file in self.files:
+				self.files.remove(target_file)
+				result = os.popen("patch -p0 < " + SVN_STASH_DIR + "/" + target_file + ".stash.patch").read()
+				result += os.popen("rm " + SVN_STASH_DIR + "/" + target_file + ".stash.patch").read()
+				print "pop " + target_file
+
+	def write(self):
+		#Create register
+		#Dado un stash nuevo, escribir en el final del registro un nuevo stash con directory bla bla
+		#Create file for svn stash
+		try:
+			current_dir = SVN_STASH_DIR + "/" + str(self.key)
+   			with open(current_dir,"w") as f:
+   				content = " ".join(self.files)
+   				f.writelines(content)
+   				f.close()
+		except IOError as e:
+   			print 'randFile not localized.'
+
+
+
+#Auxiliar functions
+
+#Create stash directory
 def create_stash_dir_if_any():
 	if not os.path.exists(SVN_STASH_DIR):
 		os.makedirs(SVN_STASH_DIR)
 
 def execute_stash_push(target_file,filename_list):
-	create_stash_dir_if_any()
-	random_key = random.getrandbits(128)
-	#execute stash_push for all files
-	if target_file == "all":
-		for filename in filename_list:
-			execute_stash_push(filename,filename_list)
-	else:
-		result = os.popen("svn diff " + target_file + " > " + SVN_STASH_DIR + "/" + target_file + ".stash.patch").read()
-		result += os.popen("svn revert " + target_file).read()
-		#print result
+	stash = svn_stash()
+	stash.push(target_file,filename_list)		
+	stash.write()
 
 def execute_stash_pop(target_file,filename_list):
-	if os.path.exists(SVN_STASH_DIR):
-		if target_file == "all":
-			pass
-		else:
-			result = os.popen("patch -p0 < " + SVN_STASH_DIR + "/" + target_file + ".stash.patch").read()
-			result += os.popen("rm " + SVN_STASH_DIR + "/" + target_file + ".stash.patch").read()
-		
+	#obtain last stash pop
+	pass
+
 #Parser order and file of the command
 def execute_svn_stash(command,target_file,filename_list):
 	print command+","+target_file
@@ -69,7 +105,6 @@ def main(args):
 	
 	filename_list = obtain_svn_status_files()
 	execute_svn_stash(command,target_file,filename_list)
-
 
 
 if __name__ == '__main__':
