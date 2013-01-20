@@ -7,7 +7,57 @@ CURRENT_DIR = os.path.realpath(__file__)
 SVN_STASH_DIR= HOME_DIR + "/.svn-stash"
 COMMAND_DEFAULT="push"
 TARGET_FILE_DEFAULT="all"
+STASH_REGISTER_FILENAME = ".stashed_register"
 
+class svn_stash_register:
+	"""A class to register all stashes."""
+	def __init__(self):
+		self.stashes = [] #list of stashes
+		self.load() #load register
+
+	def load(self):
+   		try:
+   			create_stash_dir_if_any()
+			current_dir = SVN_STASH_DIR + "/" + STASH_REGISTER_FILENAME
+			with open(current_dir,"r") as f:
+				for line in f:
+					content = line.rstrip()
+					content = content.split(" ")
+					if len(content)>0:
+						self.stashes.append(content[0])
+		except IOError as e:
+   			print 'registerFile cannot be readed.'
+
+   	def write(self):
+ 		try:
+			current_dir = SVN_STASH_DIR + "/" + STASH_REGISTER_FILENAME
+   			with open(current_dir,"w") as f:
+   				content = []
+   				for stash_id in self.stashes:
+   					line = str(stash_id) + "\n"
+	   				content.append(line)
+   				f.writelines(content)
+   				f.close()
+		except IOError as e:
+   			print 'registerFile cannot be created.'  
+
+   	def obtain_last_stash(self):
+   		length = len(self.stashes)
+   		if length>0:
+   			stash = svn_stash()
+   			stash_id = self.stashes[length-1]
+   			stash.load(stash_id)
+   			return stash
+
+   	def register_stash(self,stash): #stash must be a svn-stash instance
+   		stash_id = stash.key
+   		self.stashes.append(stash_id) 		
+   		stash.write()
+
+   	def delete_stash(self,stash):
+   		stash_id = stash.key
+   		self.stashes.remove(stash_id)
+   		self.write()
 
 class svn_stash:
 	"""A class to contain all information about stashes."""
@@ -39,8 +89,6 @@ class svn_stash:
 			result += os.popen("rm " + SVN_STASH_DIR + "/" + str(self.key)).read()
 
 	def write(self):
-		#Create register
-		#Dado un stash nuevo, escribir en el final del registro un nuevo stash con directory bla bla
 		#Create file for svn stash
 		try:
 			current_dir = SVN_STASH_DIR + "/" + str(self.key)
