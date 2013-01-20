@@ -1,7 +1,7 @@
 svn-stash
 ==========
 
-It's like the git stash command, but for Subversion. If you don't know git, you should be [this guide.]()
+It's like the git stash command, but for Subversion. If you don't know git, you should read [this guide.]()
 Svn-stash permits you to hide the changes that you don't want to commit just now. this can be more useful in some circunstances.
 
 Why?
