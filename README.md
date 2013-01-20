@@ -38,7 +38,7 @@ Show all changes of the files have been stashed with diff format, for each one o
 Delete all saved stashes.
 
 
-License
+GPL License
 ------------
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
