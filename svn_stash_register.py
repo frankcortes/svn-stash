@@ -115,8 +115,27 @@ class svn_stash:
 		except IOError as e:
    			print 'randFile cannot be readed.'
 
-#Auxiliar functions
+   	def __str__(self):
+   		content = "stash " + str(self.key)
+   		content += "\n" + ("-"*70) + "\n"
+   		for filename in self.files:
+   			try:
+   				real_dir =  filename + ".stash.patch"
+				current_dir = SVN_STASH_DIR + "/" + self.files[filename] + ".stash.patch"	
+				content += "\n" + ("-"*30) + "\n"
+				content += "file " + real_dir
+				content += "\n" + ("-"*30) + "\n"
+				with open(current_dir,"r") as f:
+					for line in f:
+						content += line
+			except IOError as e:
+				content += 'randFile cannot be shown.\n'
+		return content
 
+
+########################
+#Auxiliar functions    #
+########################
 #Create stash directory
 def create_stash_dir_if_any():
 	if not os.path.exists(SVN_STASH_DIR):

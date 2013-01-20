@@ -17,6 +17,26 @@ def execute_stash_pop(target_file,filename_list):
 	stash.pop()
 	register.delete_stash(stash)
 
+def execute_stash_list(target_file,filename_list):
+	#obtain the list of stashes.
+	register = svn_stash_register()
+	for stash_id in register.stashes:
+		print stash_id
+
+def execute_stash_clear(target_file,filename_list):
+	#delete all stashes.
+	register = svn_stash_register()
+	register.stashes = []
+	register.write()
+
+def execute_stash_show(target_file,filename_list):
+	#view all diffs of all stashes.
+	register = svn_stash_register()
+	for stash_id in register.stashes:
+		current_stash = svn_stash()
+		current_stash.load(stash_id)
+		print current_stash		
+
 #Parser order and file of the command
 def execute_svn_stash(command,target_file,filename_list):
 	print command+","+target_file
@@ -25,11 +45,11 @@ def execute_svn_stash(command,target_file,filename_list):
 	elif command == "pop":
 		execute_stash_pop(target_file,filename_list)
 	elif command == "list":
-		pass
+		execute_stash_list(target_file,filename_list)
 	elif command == "clear":
-		pass
+		execute_stash_clear(target_file,filename_list)
 	elif command == "show":
-		pass
+		execute_stash_show(target_file,filename_list)
 
 #obtain the svn status files
 def obtain_svn_status_files():
