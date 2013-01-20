@@ -12,7 +12,7 @@ TARGET_FILE_DEFAULT="all"
 class svn_stash:
 	"""A class to contain all information about stashes."""
 	def __init__(self):
-		self.files = [] #list of files
+		self.files = {} #dictionary of files
 		self.timestamp = datetime.now() #time of creation
 		self.key = random.getrandbits(128) #unique identifier
 
@@ -22,18 +22,21 @@ class svn_stash:
 			for filename in filename_list:
 				self.push(filename,filename_list)
 		else:
-			self.files.append(target_file)
-			result = os.popen("svn diff " + target_file + " > " + SVN_STASH_DIR + "/" + target_file + ".stash.patch").read()
+			randkey = random.getrandbits(128) #unique identifier
+			self.files[target_file] = randkey
+			result = os.popen("svn diff " + target_file + " > " + SVN_STASH_DIR + "/" + str(randkey) + ".stash.patch").read()
 			result += os.popen("svn revert " + target_file).read()
 			print "push " + target_file
 
 	def pop(self):
 		if os.path.exists(SVN_STASH_DIR):
 			for target_file in self.files:
-				self.files.remove(target_file)
-				result = os.popen("patch -p0 < " + SVN_STASH_DIR + "/" + target_file + ".stash.patch").read()
-				result += os.popen("rm " + SVN_STASH_DIR + "/" + target_file + ".stash.patch").read()
+				randkey = self.files[target_file]
+				result = os.popen("patch -p0 < " + SVN_STASH_DIR + "/" + str(randkey) + ".stash.patch").read()
+				result += os.popen("rm " + SVN_STASH_DIR + "/" + str(randkey) + ".stash.patch").read()
 				print "pop " + target_file
+			#delete the file of svn_stash
+			result += os.popen("rm " + SVN_STASH_DIR + "/" + str(self.key)).read()
 
 	def write(self):
 		#Create register
@@ -42,13 +45,27 @@ class svn_stash:
 		try:
 			current_dir = SVN_STASH_DIR + "/" + str(self.key)
    			with open(current_dir,"w") as f:
-   				content = " ".join(self.files)
+   				content = []
+   				for target_file in self.files:
+   					line = target_file + " " + str(self.files[target_file]) + "\n"
+	   				content.append(line)
    				f.writelines(content)
    				f.close()
 		except IOError as e:
-   			print 'randFile not localized.'
-
-
+   			print 'randFile cannot be created.'
+   
+   	def load(self,stash_id):
+   		try:
+			current_dir = SVN_STASH_DIR + "/" + str(stash_id)
+			with open(current_dir,"r") as f:
+				for line in f:
+					content = line.rstrip()
+					content = content.split(" ")
+					if len(content)>=2:
+						self.files[content[0]] = content[1]
+			self.key = stash_id
+		except IOError as e:
+   			print 'randFile cannot be readed.'
 
 #Auxiliar functions
 
@@ -64,7 +81,9 @@ def execute_stash_push(target_file,filename_list):
 
 def execute_stash_pop(target_file,filename_list):
 	#obtain last stash pop
-	pass
+	stash = svn_stash()
+	stash.load("233312371896325178646821915493004815384")
+	stash.pop()
 
 #Parser order and file of the command
 def execute_svn_stash(command,target_file,filename_list):
