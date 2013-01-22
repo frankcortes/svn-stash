@@ -61,7 +61,7 @@ def execute_stash_show(target_file,filename_list):
 
 #Parser order and file of the command
 def execute_svn_stash(command,target_file,filename_list):
-	print command+","+target_file
+	#print command+","+target_file
 	if command == "push":
 		execute_stash_push(target_file,filename_list)
 	elif command == "pop":
@@ -84,7 +84,7 @@ def obtain_svn_status_files():
 			(status,filename) = line.split()
 			if status == "M":
 				status_files.append(filename)
-	print "status_files: ",status_files
+	#print "status_files: ",status_files
 	return status_files
 
 def main(args):
