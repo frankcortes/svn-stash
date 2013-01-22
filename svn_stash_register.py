@@ -18,7 +18,7 @@ import random
 from datetime import datetime
 
 HOME_DIR = os.path.expanduser("~")
-CURRENT_DIR = os.path.realpath(__file__)
+CURRENT_DIR = os.getcwd()
 SVN_STASH_DIR= HOME_DIR + "/.svn-stash"
 COMMAND_DEFAULT="push"
 TARGET_FILE_DEFAULT="all"
@@ -40,11 +40,14 @@ class svn_stash_register:
 					content = content.split(" ")
 					if len(content)>0:
 						self.stashes.append(content[0])
+				f.close()
 		except IOError as e:
-   			print 'registerFile cannot be readed.'
+   			print e
+			print 'registerFile cannot be readed.'
 
    	def write(self):
  		try:
+ 			create_stash_dir_if_any()
 			current_dir = SVN_STASH_DIR + "/" + STASH_REGISTER_FILENAME
    			with open(current_dir,"w") as f:
    				content = []
@@ -63,6 +66,7 @@ class svn_stash_register:
    			stash_id = self.stashes[length-1]
    			stash.load(stash_id)
    			return stash
+   		return False
 
    	def register_stash(self,stash): #stash must be a svn-stash instance
    		stash_id = stash.key
@@ -80,6 +84,7 @@ class svn_stash:
 		self.files = {} #dictionary of files
 		self.timestamp = datetime.now() #time of creation
 		self.key = random.getrandbits(128) #unique identifier
+		self.root_url = CURRENT_DIR
 
 	def push(self,target_file,filename_list):
 		create_stash_dir_if_any()
@@ -109,11 +114,14 @@ class svn_stash:
 			current_dir = SVN_STASH_DIR + "/" + str(self.key)
    			with open(current_dir,"w") as f:
    				content = []
+   				#add the first line with root url
+   				line = self.root_url + "\n"
+   				content.append(line)
    				for target_file in self.files:
    					line = target_file + " " + str(self.files[target_file]) + "\n"
 	   				content.append(line)
    				f.writelines(content)
-   				f.close()
+				f.close()
 		except IOError as e:
    			print 'randFile cannot be created.'
    
@@ -121,28 +129,39 @@ class svn_stash:
    		try:
 			current_dir = SVN_STASH_DIR + "/" + str(stash_id)
 			with open(current_dir,"r") as f:
+				is_first = True
 				for line in f:
 					content = line.rstrip()
-					content = content.split(" ")
-					if len(content)>=2:
-						self.files[content[0]] = content[1]
-			self.key = stash_id
+					#if is the first line, then it is the root url
+					if is_first:
+						self.root_url = content[0]
+						is_first = False
+					#it is stashed filename, otherwise
+					else:
+						content = content.split(" ")
+						if len(content)>=2:
+							self.files[content[0]] = content[1]
+				self.key = stash_id
+				f.close()
 		except IOError as e:
    			print 'randFile cannot be readed.'
 
    	def __str__(self):
-   		content = "stash " + str(self.key)
-   		content += "\n" + ("-"*70) + "\n"
+   		content = print_hr(70)
+   		content += "stash " + str(self.key)
+   		content += print_hr(70)
+   		content += "root in: <" + self.root_url + ">\n"
    		for filename in self.files:
    			try:
    				real_dir =  filename + ".stash.patch"
 				current_dir = SVN_STASH_DIR + "/" + self.files[filename] + ".stash.patch"	
-				content += "\n" + ("-"*30) + "\n"
+				content += print_hr()
 				content += "file " + real_dir
-				content += "\n" + ("-"*30) + "\n"
+				content += print_hr()
 				with open(current_dir,"r") as f:
 					for line in f:
 						content += line
+					f.close()
 			except IOError as e:
 				content += 'randFile cannot be shown.\n'
 		return content
@@ -155,3 +174,12 @@ class svn_stash:
 def create_stash_dir_if_any():
 	if not os.path.exists(SVN_STASH_DIR):
 		os.makedirs(SVN_STASH_DIR)
+	stash_register_file = SVN_STASH_DIR + "/" + STASH_REGISTER_FILENAME
+	if not os.path.exists(stash_register_file):
+		try:
+			f = open(stash_register_file, "w")
+		except IOError:
+			print "registerFile cannot be created."
+
+def print_hr(lng=30):
+	return "\n" + ("-"*lng) + "\n"

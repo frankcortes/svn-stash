@@ -19,18 +19,25 @@ from datetime import datetime
 from svn_stash_register import svn_stash_register,svn_stash,HOME_DIR,CURRENT_DIR,SVN_STASH_DIR,COMMAND_DEFAULT,TARGET_FILE_DEFAULT
 
 def execute_stash_push(target_file,filename_list):
-	stash = svn_stash()
-	stash.push(target_file,filename_list)		
-	register = svn_stash_register()
-	register.register_stash(stash)
-	register.write()
+	if len(filename_list)>0:
+		#save the svn status into a stash
+		stash = svn_stash()
+		stash.push(target_file,filename_list)		
+		register = svn_stash_register()
+		register.register_stash(stash)
+		register.write()
+	else:
+		print "nothing to stash in this directory."
 
 def execute_stash_pop(target_file,filename_list):
 	#obtain last stash pop
 	register = svn_stash_register()
 	stash = register.obtain_last_stash()
-	stash.pop()
-	register.delete_stash(stash)
+	if stash:
+		stash.pop()
+		register.delete_stash(stash)
+	else:
+		print "there are not previous stashes."
 
 def execute_stash_list(target_file,filename_list):
 	#obtain the list of stashes.
