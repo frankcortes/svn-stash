@@ -134,7 +134,7 @@ class svn_stash:
 					content = line.rstrip()
 					#if is the first line, then it is the root url
 					if is_first:
-						self.root_url = content[0]
+						self.root_url = content
 						is_first = False
 					#it is stashed filename, otherwise
 					else:
