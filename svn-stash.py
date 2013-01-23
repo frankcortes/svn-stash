@@ -59,9 +59,27 @@ def execute_stash_show(target_file,filename_list):
 		current_stash.load(stash_id)
 		print current_stash		
 
+def execute_stash_help(target_file,filename_list):
+	b =  "\033[1m"
+	end_b = "\033[0m"
+	help_content = "SVN STASH\n"
+	help_content += "\n" + b + "NAME" + end_b + "\n"
+	help_content += "svn-stash - Stash the changes in a dirty working directory away\n"
+	help_content += "\n"+ b + "SYNOPSIS" + end_b + "\n"
+	help_content +=	"\tsvn stash list\n"
+	help_content += "\tsvn stash show\n"
+	help_content += "\tsvn stash push\n"
+	help_content += "\tsvn stash pop\n"
+	help_content += "\tsvn stash clear\n"
+	help_content += "\tsvn stash help\n"
+	help_content += "\n" + b + "DESCRIPTION" + end_b +"\n"
+	help_content += "\tSvn-stash permits you to hide the changes that you don't want to commit just now. this can be more useful in some circunstances.\n"
+	print help_content
+
+
 #Parser order and file of the command
 def execute_svn_stash(command,target_file,filename_list):
-	print command+","+target_file
+	#print command+","+target_file
 	if command == "push":
 		execute_stash_push(target_file,filename_list)
 	elif command == "pop":
@@ -72,6 +90,8 @@ def execute_svn_stash(command,target_file,filename_list):
 		execute_stash_clear(target_file,filename_list)
 	elif command == "show":
 		execute_stash_show(target_file,filename_list)
+	elif command == "help":
+		execute_stash_help(target_file,filename_list)
 
 #obtain the svn status files
 def obtain_svn_status_files():
@@ -84,7 +104,7 @@ def obtain_svn_status_files():
 			(status,filename) = line.split()
 			if status == "M":
 				status_files.append(filename)
-	print "status_files: ",status_files
+	#print "status_files: ",status_files
 	return status_files
 
 def main(args):
