@@ -104,7 +104,6 @@ def obtain_svn_status_files():
 			(status,filename) = line.split()
 			if status == "M":
 				status_files.append(filename)
-	#print "status_files: ",status_files
 	return status_files
 
 def main(args):
