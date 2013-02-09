@@ -199,5 +199,6 @@ def is_a_current_stash(stash_id):
 	stash_dir_parts = stash.root_url.split("/")
 	stash_dir_parts = stash_dir_parts[:len(current_dir_parts)]
 	stash_dir = "/".join(stash_dir_parts)
-	#print stash_dir + " " + CURRENT_DIR
-	return stash_dir == CURRENT_DIR
+	if ".svn" in os.listdir(CURRENT_DIR):	
+		return stash_dir == CURRENT_DIR
+	return False
