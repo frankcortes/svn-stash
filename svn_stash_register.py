@@ -27,7 +27,8 @@ STASH_REGISTER_FILENAME = ".stashed_register"
 class svn_stash_register:
 	"""A class to register all stashes."""
 	def __init__(self):
-		self.stashes = [] #list of stashes
+		self.stashes = [] #list of stashes in the current dir
+		self.all_stashes = [] #list of all stashes in all directories
 		self.load() #load register
 
 	def load(self):
@@ -41,7 +42,8 @@ class svn_stash_register:
 					if len(content)>0:
 						stash_id = content[0]
 						if is_a_current_stash(stash_id):
-							self.stashes.append(content[0])
+							self.stashes.append(stash_id)
+						self.all_stashes.append(stash_id)
 				f.close()
 		except IOError as e:
    			print e
@@ -53,7 +55,7 @@ class svn_stash_register:
 			current_dir = SVN_STASH_DIR + "/" + STASH_REGISTER_FILENAME
    			with open(current_dir,"w") as f:
    				content = []
-   				for stash_id in self.stashes:
+   				for stash_id in self.all_stashes:
    					line = str(stash_id) + "\n"
 	   				content.append(line)
    				f.writelines(content)
@@ -72,13 +74,15 @@ class svn_stash_register:
 
    	def register_stash(self,stash): #stash must be a svn-stash instance
    		stash_id = stash.key
-   		self.stashes.append(stash_id) 		
+   		self.stashes.append(stash_id)
+		self.all_stashes.append(stash_id)
    		stash.write()
 		print "create stash " + str(stash_id)
 
    	def delete_stash(self,stash):
    		stash_id = stash.key
    		self.stashes.remove(stash_id)
+		self.all_stashes.remove(stash_id)
    		self.write()
 		print "delete stash " + str(stash_id)
 
