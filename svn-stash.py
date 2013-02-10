@@ -48,8 +48,11 @@ def execute_stash_list(target_file,filename_list):
 def execute_stash_clear(target_file,filename_list):
 	#delete all stashes.
 	register = svn_stash_register()
-	register.stashes = []
-	register.write()
+	marked_stashes = list(register.stashes)
+	for stash in marked_stashes:
+		current_stash = svn_stash()
+		current_stash.load(stash)
+		register.delete_stash(current_stash)
 
 def execute_stash_show(target_file,filename_list):
 	#view all diffs of all stashes.

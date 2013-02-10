@@ -84,6 +84,8 @@ class svn_stash_register:
    		self.stashes.remove(stash_id)
 		self.all_stashes.remove(stash_id)
    		self.write()
+   		#Remove stash files
+   		stash.clear()
 		print "delete stash " + str(stash_id)
 
 class svn_stash:
@@ -107,6 +109,7 @@ class svn_stash:
 			#print "push " + target_file
 
 	def pop(self):
+		result = ""
 		if os.path.exists(SVN_STASH_DIR):
 			for target_file in self.files:
 				randkey = self.files[target_file]
@@ -132,7 +135,15 @@ class svn_stash:
 				f.close()
 		except IOError as e:
    			print 'randFile cannot be created.'
-   
+
+   	def clear(self):
+   		result = ""
+		if os.path.exists(SVN_STASH_DIR):
+			for target_file in self.files:  
+				randkey = self.files[target_file] 		
+   				result += os.popen("rm " + SVN_STASH_DIR + "/" + str(randkey) + ".stash.patch").read()
+   			result += os.popen("rm " + SVN_STASH_DIR + "/" + str(self.key)).read()
+
    	def load(self,stash_id):
    		try:
 			current_dir = SVN_STASH_DIR + "/" + str(stash_id)
