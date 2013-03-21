@@ -104,7 +104,9 @@ def obtain_svn_status_files():
 	for line in status_list:
 		words = line.split()
 		if len(words) > 1:
-			(status,filename) = line.split()
+			elements = line.split()
+			status = elements[0]
+			filename = elements[1]
 			if status == "M":
 				status_files.append(filename)
 	return status_files
